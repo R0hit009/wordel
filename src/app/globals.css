@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background-color: #121213;
+  color: white;
+}
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+.board {
+  display: grid;
+  gap: 8px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(5, 64px);
+  gap: 8px;
+}
+
+.cell {
+  width: 64px;
+  height: 64px;
+  border: 2px solid #3a3a3c;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  background-color: #121213;
+  color: white;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.cell.filled {
+  border-color: #565758;
+}
+.instructions {
+  font-size: 0.9rem;
+  color: #a1a1a1;
+  margin-top: 16px;
+}
