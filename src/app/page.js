@@ -1,66 +1,54 @@
 "use client";
+import { useState } from "react";
+import GameBoard from "@/components/GameBoard";
+import RestartButton from "@/components/RestartButton";
+import LetterTracker from "@/components/LetterTracker"; // 👈 add this
 
-import { useEffect, useState } from "react";
-import GameBoard from "../components/GameBoard";
-import Keyboard from "../components/Keyboard";
+export default function HomePage() {
+  const [gameKey, setGameKey] = useState(0);
+  const [level, setLevel] = useState("medium");
+  const [discoveredLetters, setDiscoveredLetters] = useState(new Set());
 
-export default function Home() {
-  const [wordLength, setWordLength] = useState(5);
-  const [guesses, setGuesses] = useState([]);
-  const [currentGuess, setCurrentGuess] = useState("");
-  const [gameOver, setGameOver] = useState(false);
+  const handleRestart = () => {
+    setGameKey(prev => prev + 1);
+    setDiscoveredLetters(new Set()); // reset letters
+  };
 
-  useEffect(() => {
-    fetch("/api/get-word")
-      .then(res => res.json())
-      .then(data => {
-        setWordLength(data.wordLength);
-        setGuesses(Array(6).fill().map(() => Array(data.wordLength).fill({ letter: "", status: "" })));
-      });
-  }, []);
-
-  const handleKeyPress = (key) => {
-    if (gameOver) return;
-
-    if (key === "ENTER") {
-      if (currentGuess.length === wordLength) {
-        fetch("/api/check-guess", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ guess: currentGuess }),
-        })
-          .then(res => res.json())
-          .then(data => {
-            const newGuesses = [...guesses];
-            const rowIndex = newGuesses.findIndex(row => row[0].letter === "");
-            newGuesses[rowIndex] = data.result;
-            setGuesses(newGuesses);
-            setCurrentGuess("");
-            if (data.isCorrect) {
-              alert("🎉 You guessed it!");
-              setGameOver(true);
-            }
-          });
-      }
-      return;
-    }
-
-    if (key === "BACKSPACE") {
-      setCurrentGuess(currentGuess.slice(0, -1));
-      return;
-    }
-
-    if (currentGuess.length < wordLength && /^[A-Z]$/.test(key)) {
-      setCurrentGuess(currentGuess + key);
-    }
+  const handleLevelChange = (newLevel) => {
+    setLevel(newLevel);
+    setGameKey(prev => prev + 1);
+    setDiscoveredLetters(new Set());
   };
 
   return (
-    <div className="p-4 text-center">
-      <h1 className="text-3xl font-bold mb-4">Word Game</h1>
-      <GameBoard guesses={guesses} wordLength={wordLength} />
-      <p className="mt-2">Guess: {currentGuess}</p>
-      <Keyboard onKeyPress={handleKeyPress} />
-    </div>
+    <main className="min-h-screen flex flex-row justify-center items-start gap-8 p-6 ">
+      {/* LEFT SIDE → Game */}
+      <div className="flex flex-col items-center gap-6">
+        <h1 className="text-3xl font-bold">Wordle Game</h1>
+
+        {/* Level Selector */}
+        <div className="flex gap-4">
+          {["easy", "medium", "hard"].map(l => (
+            <button
+              key={l}
+              onClick={() => handleLevelChange(l)}
+              className={`px-4 py-2 rounded ${
+                level === l ? "bg-blue-500 text-white" : "bg-gray-300"
+              }`}
+            >
+              {l.charAt(0).toUpperCase() + l.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Game Board */}
+         <GameBoard key={gameKey} level={level} />
+
+        {/* Restart Button */}
+        <RestartButton onRestart={handleRestart} />
+      </div>
+
+      {/* RIGHT SIDE → Letter Tracker */}
+    </main>
   );
 }

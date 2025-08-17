@@ -13,7 +13,27 @@ export async function POST(req) {
     return { letter, status: "absent" };
   });
 
-  return new Response(JSON.stringify({ result, isCorrect: guess.toUpperCase() === dailyWord }), {
-    headers: { "Content-Type": "application/json" }
+  // ✅ Build letterStatus map for tracker
+  let letterStatus = {};
+  result.forEach(({ letter, status }) => {
+    // Only overwrite if it's "better" (correct > present > absent)
+    if (
+      !letterStatus[letter] ||
+      (letterStatus[letter] === "present" && status === "correct") ||
+      (letterStatus[letter] === "absent" && status !== "absent")
+    ) {
+      letterStatus[letter] = status;
+    }
   });
+
+  return new Response(
+    JSON.stringify({
+      result,
+      isCorrect: guess.toUpperCase() === dailyWord,
+      letterStatus, // ✅ return tracker info here
+    }),
+    {
+      headers: { "Content-Type": "application/json" },
+    }
+  );
 }
